@@ -176,6 +176,13 @@ footer{background:var(--bg);padding:6px 10px calc(env(safe-area-inset-bottom) + 
 @keyframes flash{0%{opacity:.7}100%{opacity:0}}
 #app.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
 @keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(4px,-2px)}30%,50%,70%{transform:translate(-7px,3px)}40%,60%{transform:translate(7px,-3px)}}
+#hiddenBtn{display:block;margin:0 auto 22px;border:0;border-radius:18px;padding:8px 16px;font-family:inherit;font-size:13px;
+  color:#fff;background:rgba(90,0,16,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);cursor:pointer}
+.imgbub{width:62%;max-width:240px;border-radius:18px;overflow:hidden;animation:pop .35s;line-height:0}
+.imgbub svg{width:100%;height:auto;display:block}
+html.eerie{--bg:#08080a;--gray:#1c1c20;--text:#d8d8dc;--sub:#6c6c72;--bar:rgba(10,10,12,.88);--line:rgba(255,255,255,.06);--field:#08080a;--fieldline:#26262b}
+#app,#chat,header,footer,.bub,.bub::before,.bub::after,.field,html,body{transition:background-color 4s ease,color 4s ease,border-color 4s ease}
+html.eerie .sysnote{color:#8a8a90;letter-spacing:2px}
 .flake{position:absolute;top:-10px;border-radius:50%;background:#fff;opacity:.8;animation:fall linear infinite}
 @keyframes fall{to{transform:translateY(110vh) translateX(30px)}}
 </style>
@@ -232,6 +239,7 @@ footer{background:var(--bg);padding:6px 10px calc(env(safe-area-inset-bottom) + 
     <div class="nt"><div class="nh" id="lapp">앱<span>2시간 전</span></div><div class="nb" id="lbody"></div></div>
   </div>
   <div class="lfoot">
+    <button id="hiddenBtn">히든 엔딩 바로 보기</button>
     <h1 id="ltitle">첫눈이 오면</h1>
     <p>탭하여 열기</p>
     <div class="bar"></div>
@@ -356,16 +364,49 @@ const S = {
   d6b:{k:['사진 말고~','직접 보러 나와. 나 가게 몰래 빠져나왔거든. 사장한테 엄청 혼날 거야.'], n:'END'},
   d6c:{k:['알아. 그래서 대목인데 가게 빠져나왔어.','지금 너네 집 앞이야. 놀랐지?'], n:'END'},
 
-  /* 히든 엔딩 */
-  hidden:{fast:true, k:['나와.','아, 그 전에.','오늘 회사에서 같이 나온 남자, 누구야?','옆자리 사람이라고 하려고 했지? 알아. 이름도 알아.','...농담이야.'], ch:[
+  /* 히든 엔딩
+     메시지 객체: t 텍스트 · pre 앞의 침묵(ms) · hes 입력 중 표시가 떴다 사라지는 횟수
+                 type 입력 중 표시 유지 시간 · inst 입력 중 표시 없이 바로 도착 · img 사진 · note 효과음/지문 */
+  hidden:{eerie:true, k:[
+    {t:'나와.', pre:3500, hes:2},
+    {t:'아, 그 전에 궁금한 거.', pre:4000},
+    {t:'오늘 회사에서 같이 나온 남자, 누구야?', pre:2500, type:7000}], ch:[
+    {x:'네? 그냥 옆자리 동료인데요...',a:0,n:'hidden2'},
     {x:'케이... 그걸 어떻게 알아요?',a:0,n:'hidden2'}]},
-  hidden2:{fast:true, k:['너 답장 늦을 때마다 생각했어.','누구랑 있길래 나를 이렇게 기다리게 하나.','그래서 그냥, 보러 갔지.','매일.','괜찮아. 화난 거 아니야.','가게도 오늘 그만뒀어.','이제 너만 보면 되니까.'], ch:[
-    {x:'...케이, 좀 무서워요',a:0,n:'hidden3'}]},
-  hidden3:{fast:true, k:['ㅋㅋ','무섭긴.','이제 나 안 기다리게 할 거잖아. 그치?','문 열어, 마오위.','나 지금 너네 집 문 앞이야.'], ch:[
+  hidden2:{eerie:true, k:[
+    {t:'알아.', pre:2000, hes:1, type:9000},
+    {t:'다나카 유이치. 스물여덟. 기획팀.', pre:2500, inst:true},
+    {t:'너랑 매일 같은 전철 타더라. 3번째 칸.', pre:3000},
+    {t:'...농담이야.', pre:5000},
+    {t:'아니다.', pre:6000, inst:true}], ch:[
+    {x:'케이, 지금 무슨 말 하는 거예요?',a:0,n:'hidden3'}]},
+  hidden3:{eerie:true, k:[
+    {t:'너 답장 늦을 때마다 생각했어.', pre:3000, type:6000},
+    {t:'누구랑 있길래 나를 이렇게 기다리게 하나.', pre:2500},
+    {t:'그래서 그냥, 보러 갔지.', pre:3000},
+    {t:'매일.', pre:5500, inst:true},
+    {t:'너네 집 문, 예쁘더라.', pre:4500}], ch:[
+    {x:'...좀 무서워요',a:0,n:'hidden4'}]},
+  hidden4:{eerie:true, k:[
+    {t:'ㅋㅋ', pre:2500, hes:3, type:1500},
+    {t:'무섭긴.', pre:3000},
+    {t:'가게, 오늘 그만뒀어.', pre:3500},
+    {t:'이제 너만 보면 되니까.', pre:3000},
+    {note:'— 띵동 —', pre:5000},
+    {t:'문 열어, 마오위.', pre:4500, inst:true}], ch:[
     {x:'(문을 연다)',a:0,n:'hiddenA'},
     {x:'(문을 열지 않는다)',a:0,n:'hiddenB'}]},
-  hiddenA:{k:['봐. 이렇게 쉬운데.','메리 크리스마스, 마오위.','이제 아무 데도 가지 마.'], end:['HIDDEN ENDING','기다리게 하지 마','늦은 답장 하나, 오래 떠 있던 읽음 표시 하나. 그가 기다린 시간만큼 그의 마음은 조금씩 다른 모양이 되어 갔다. 문이 닫히고, 첫눈은 계속 내렸다.']},
-  hiddenB:{k:['안 열어도 돼.','기다리는 거, 이제 나 잘하거든.','네가 가르쳐 줬잖아.','마오위.'], crack:true, end:['HIDDEN ENDING','기다리게 하지 마','늦은 답장 하나, 오래 떠 있던 읽음 표시 하나. 그가 기다린 시간만큼 그의 마음은 조금씩 다른 모양이 되어 갔다. 문밖의 발소리는 밤새 멈추지 않았다.']},
+  hiddenA:{eerie:true, k:[
+    {note:'— 철컥 —', pre:2500},
+    {t:'봐. 이렇게 쉬운데.', pre:3500, inst:true},
+    {t:'메리 크리스마스, 마오위.', pre:3500},
+    {t:'이제 아무 데도 가지 마.', pre:4000}], end:['HIDDEN ENDING','기다리게 하지 마','늦은 답장 하나, 오래 떠 있던 읽음 표시 하나. 그가 기다린 시간만큼 그의 마음은 조금씩 다른 모양이 되어 갔다. 문이 닫히고, 첫눈은 계속 내렸다.']},
+  hiddenB:{eerie:true, k:[
+    {t:'안 열어도 돼.', pre:6000, hes:2},
+    {t:'기다리는 거, 이제 나 잘하거든.', pre:3500},
+    {t:'네가 가르쳐 줬잖아.', pre:4000},
+    {note:'— 띵동 —', pre:5000},
+    {t:'마오위.', pre:7000, inst:true}], crack:true, end:['HIDDEN ENDING','기다리게 하지 마','늦은 답장 하나, 오래 떠 있던 읽음 표시 하나. 그가 기다린 시간만큼 그의 마음은 조금씩 다른 모양이 되어 갔다. 문밖의 발소리는 밤새 멈추지 않았다.']},
 
   /* 엔딩 */
   good:{k:['목도리 꼭 하고 나와. 안 하고 나오면 내 거 칭칭 감아줄 거야.','아, 그리고 할 말 있어.'], ch:[{x:'지금 바로 나가요!',a:0,n:'good2'}]},
@@ -488,24 +529,61 @@ async function kSays(text, followUp){
   t.remove(); addBubble('k', text);
 }
 
+/* 히든 엔딩 전용: 침묵, 썼다 지우기, 입력 중 없이 도착 */
+function typingRow(){ const t = document.createElement('div'); t.className = 'row k typing' + (lastSender==='me'?' gap':'');
+  t.innerHTML = '<div class="bub"><span></span><span></span><span></span></div>'; chat.appendChild(t); scroll(); return t; }
+async function kEerie(m){
+  await wait(m.pre || 2500);
+  if (m.note){ addNote(m.note); scroll(); return; }
+  for (let h = 0; h < (m.hes || 0); h++){            // 입력 중... 떴다가 사라짐
+    const t = typingRow(); await wait(1600 + Math.random()*1800); t.remove(); await wait(1800 + Math.random()*1500);
+  }
+  if (!m.inst){ const t = typingRow(); await wait(m.type || (1800 + [...(m.t||'')].length*140)); t.remove(); }
+  if (m.img) addImage(m.img); else addBubble('k', m.t);
+}
+function addImage(){
+  if (lastSender === 'k') chat.querySelectorAll('.row.k .bub.tail').forEach(b => b.classList.remove('tail'));
+  const row = document.createElement('div'); row.className = 'row k' + (lastSender==='me' ? ' gap' : '');
+  row.innerHTML = `<div class="imgbub"><svg viewBox="0 0 240 300">
+    <defs><linearGradient id="hall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2c33"/><stop offset="1" stop-color="#0e0f12"/></linearGradient>
+    <radialGradient id="lamp" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#d9d2b8" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs>
+    <rect width="240" height="300" fill="url(#hall)"/><rect width="240" height="300" fill="url(#lamp)"/>
+    <rect x="62" y="48" width="116" height="222" rx="2" fill="#3b3a38" stroke="#1b1b1b" stroke-width="3"/>
+    <rect x="72" y="60" width="96" height="198" fill="none" stroke="#2c2b29" stroke-width="2"/>
+    <circle cx="120" cy="112" r="4" fill="#0b0b0b" stroke="#77736a" stroke-width="1.5"/>
+    <rect x="98" y="30" width="44" height="13" rx="2" fill="#bdb6a2"/><text x="120" y="40.5" font-size="10" text-anchor="middle" fill="#333" font-family="sans-serif">302</text>
+    <rect x="150" y="160" width="12" height="4" rx="2" fill="#8d8878"/>
+    <rect x="62" y="268" width="116" height="3" fill="#e8d9a8" opacity=".55"/>
+    <path d="M0 285 Q60 278 120 286 T240 282 V300 H0Z" fill="#cfd3da" opacity=".5"/>
+    <g fill="#fff" opacity=".7"><circle cx="20" cy="70" r="1.4"/><circle cx="210" cy="40" r="1.1"/><circle cx="35" cy="190" r="1.6"/><circle cx="205" cy="150" r="1.3"/><circle cx="190" cy="240" r="1.2"/><circle cx="48" cy="250" r="1"/></g>
+    <rect width="240" height="300" filter="url(#grain)"/></svg></div>`;
+  chat.appendChild(row); lastSender = 'k'; scroll();
+}
+
 /* 날짜/시간 넘어갈 때: 화면 끄기 → 잠금화면 → 알림 탭 */
 const off = document.getElementById('off'), zzz = document.getElementById('zzz');
 const lock = document.getElementById('lock');
+let lockHandler = null;
+let eerie = false;
 let lastDate = null, lockNudge = null, kGone = false, obsess = 0, waitedCounted = false, fastK = false;
 function showLock(ts, preview, first){
   document.getElementById('ldate').textContent = ts[0].replace(/\s*\((.)\)/, ' $1요일');
   document.getElementById('ltime').textContent = ts[1].split(' ')[1];
   document.getElementById('nbody').textContent = preview || '';
   document.getElementById('ltitle').style.display = first ? '' : 'none';
+  document.getElementById('hiddenBtn').style.display = first ? '' : 'none';
   const nt = document.getElementById('notif'); nt.style.display = preview ? '' : 'none';
   nt.style.animation='none'; void nt.offsetWidth; nt.style.animation='';
   lockNudge = null; banner.classList.remove('show'); lockAd(!preview && !first);
   lock.style.display = 'flex'; lock.classList.remove('gone');
   const nudge = preview && setTimeout(() => { lockNudge = '왜 안 읽어~'; document.getElementById('nbody').textContent = lockNudge;
     nt.style.animation='none'; void nt.offsetWidth; nt.style.animation=''; }, 12000);
-  return new Promise(res => lock.addEventListener('click', () => { clearTimeout(nudge);
-    lock.classList.add('gone'); setTimeout(() => { lock.style.display='none'; res(); }, 550);
-  }, {once:true}));
+  return new Promise(res => {
+    lockHandler = () => { clearTimeout(nudge); lockHandler = null;
+      lock.classList.add('gone'); setTimeout(() => { lock.style.display='none'; res(); }, 550); };
+    lock.addEventListener('click', lockHandler, {once:true});
+  });
 }
 function askSleep(sameDay){
   return new Promise(res => {
@@ -588,8 +666,7 @@ async function play(id, fromLock){
   if (id === 'END') id = (obsess >= 6 && score >= 14) ? 'hidden' : score >= 25 ? 'good' : score >= 14 ? 'normal' : 'bad';
   const n = S[id];
   if (n.silent) kGone = true;
-  fastK = !!n.fast;
-  if (id === 'hidden') goDark();
+  if (n.eerie && !eerie){ eerie = true; goDark(); document.documentElement.classList.add('eerie'); }
   let instant = !!fromLock;
   if (n.ts){
     if (!fromLock && chat.children.length){ await sleepTransition(n); instant = true; }
@@ -599,6 +676,7 @@ async function play(id, fromLock){
   for (let i = 0; i < n.k.length; i++){
     if (i === 0 && instant){ await wait(500); addBubble('k', n.k[0]);
       if (lockNudge){ addBubble('k', lockNudge); lockNudge = null; } }  // 알림으로 이미 받은 메시지
+    else if (typeof n.k[i] === 'object') await kEerie(n.k[i]);
     else await kSays(n.k[i], i > 0);
   }
   if (n.crack){ await wait(1600); crackScreen(); await wait(2600); }
@@ -615,6 +693,11 @@ const CHOICE_IDLE = [
   [55000, [['그렇게 고민할 정도야?', '아무렇게나 보내. ...아니, 아무렇게나는 말고.']]],
   [90000, [['나 원래 손님들 답장 같은 거 안 기다리거든.', '근데 너는 기다리게 되네. 이상하게.']]],
   [150000,[['...설마 폰 들고 잠든 거 아니지?', '잠들었으면 일어나서 답장해. 기다릴게.']]]
+];
+const EERIE_IDLE = [
+  [14000, [['답장해.']]],
+  [34000, [['또 기다리게 하네.']]],
+  [70000, [['괜찮아.', '기다릴게.']]]
 ];
 const SLEEP_IDLE = [
   [15000, [['안 자?']]],
@@ -667,7 +750,7 @@ function showChoices(list){
     b.onclick=()=>choose(c); chBox.appendChild(b);
   });
   waitedCounted = false;
-  scroll(); startIdle(CHOICE_IDLE); maybeAd(kGone ? .5 : .28);
+  scroll(); startIdle(eerie ? EERIE_IDLE : CHOICE_IDLE); if (!eerie) maybeAd(kGone ? .5 : .28);
 }
 const tval = document.getElementById('tval');
 const TYPED_IDLE = [
@@ -695,6 +778,7 @@ async function sendChoice(c){
   if (statusEl) statusEl.remove();
   const row = addBubble('me', c.x);
   statusEl = document.createElement('div'); statusEl.className='status'; statusEl.textContent='전송됨';
+  if (eerie){ const se = statusEl; setTimeout(() => { se.textContent = '읽음'; }, 120); }  // 보내자마자 읽음
   row.after(statusEl);
   if (c.fail){ await wait(1800); statusEl.textContent = '⚠︎ 전송되지 않음'; statusEl.classList.add('fail'); await wait(1200); }
   score += c.a; obsess += c.o || 0; setHeart();
@@ -711,7 +795,7 @@ function showEnd([tag,title,desc], id){
 async function restart(){
   off.classList.add('on'); await wait(900);
   document.getElementById('crack').style.display='none'; document.getElementById('crack').innerHTML='';
-  chat.innerHTML=''; chBox.innerHTML=''; kGone=false; pending=null; obsess=0; fastK=false;
+  chat.innerHTML=''; chBox.innerHTML=''; kGone=false; pending=null; obsess=0; fastK=false; eerie=false; document.documentElement.classList.remove('eerie');
   document.querySelectorAll('.heart path').forEach(p => p.getAttribute('fill') !== 'none' ? p.setAttribute('fill','#ff2d55') : p.setAttribute('stroke','#ff2d55')); score=0; lastSender=null; statusEl=null; lastDate=null; setHeart();
   const p = showLock(S.start.ts, S.start.k[0], true);
   off.classList.remove('on'); await p;
@@ -773,6 +857,17 @@ function lockAd(force){
   document.getElementById('lbody').textContent = a.t + ' ' + a.b;
   n2.style.display = ''; n2.style.animation='none'; void n2.offsetWidth; n2.style.animation='';
 }
+
+/* 히든 엔딩 바로 가기: 12월 25일 장면부터, 히든 조건을 채운 상태로 시작 */
+document.getElementById('hiddenBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  if (lockHandler){ lock.removeEventListener('click', lockHandler); lockHandler = null; }
+  chat.innerHTML=''; chBox.innerHTML=''; statusEl=null; lastSender=null; kGone=false; pending=null;
+  eerie=false; document.documentElement.classList.remove('eerie');
+  score = 20; obsess = 6; setHeart();
+  lock.classList.add('gone');
+  setTimeout(() => { lock.style.display='none'; play('d6', true); }, 550);
+});
 
 /* 잠금화면 */
 for(let i=0;i<40;i++){ const f=document.createElement('div'); f.className='flake'; const s=2+Math.random()*4;
